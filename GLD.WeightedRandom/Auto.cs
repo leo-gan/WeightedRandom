@@ -25,6 +25,8 @@ namespace GLD.WeightedRandom
                 sb.Append(new string(curKey, statusWithWeight.Value));
             }
             ValueDistribution = Randomize(sb.ToString());
+            _curIndex = Rand.Next(0, ValueDistribution.Length); // random start index
+
         }
 
         #region IRandValue Members

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace GLD.WeightedRandom
 {
@@ -14,6 +15,7 @@ namespace GLD.WeightedRandom
         {
             KeyValues = keyValues;
             ValueDistributionRandomized = valueDistributionRandomized;
+            _curIndex = DateTime.Now.Ticks.GetHashCode() % ValueDistributionRandomized.Length; // random start index
         }
 
         #region IRandValue Members
@@ -22,7 +24,7 @@ namespace GLD.WeightedRandom
         {
             get
             {
-                _curIndex = _curIndex%ValueDistributionRandomized.Length;
+                _curIndex = _curIndex % ValueDistributionRandomized.Length;
                 return KeyValues[ValueDistributionRandomized[_curIndex++]];
             }
         }
