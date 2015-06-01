@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using GLD.WeightedRandom;
 
 namespace WeightedRandom
@@ -47,30 +48,41 @@ namespace WeightedRandom
 
         private static void Main(string[] args)
         {
-            int cylcles = Convert.ToInt32(args[0]);
+            var cycles = Convert.ToInt32(args[0]);
+            Console.WriteLine("{0,10:N0} cycles:", cycles);
+            Console.WriteLine("Method   Ticks    Ticks/Cycle");
+            Console.WriteLine("==============================================");
 
-            Test(cylcles, new Simple(KeyValues, ValueDistribution));
-            Test(cylcles, new Fast(KeyValues, ValueDistributionRandomized));
-            Test(cylcles, new Auto(ValueWeights));
-            Test(cylcles, new Simple(KeyValues, ValueDistribution));
-            Test(cylcles, new Fast(KeyValues, ValueDistributionRandomized));
-            Test(cylcles, new Auto(ValueWeights));
-            Test(cylcles, new Simple(KeyValues, ValueDistribution));
-            Test(cylcles, new Fast(KeyValues, ValueDistributionRandomized));
-            Test(cylcles, new Auto(ValueWeights));
+            for (int i = 0; i < 5; i++)
+            {
+                Test(cycles, new Simple(KeyValues, ValueDistribution));
+                Test(cycles, new Fast(KeyValues, ValueDistributionRandomized));
+                Test(cycles, new Auto(ValueWeights));
+            }
         }
 
-        private static void Test(int cylcles, IRandValue randomValue)
+        private static void Test(int cycles, IRandValue randomValue)
         {
-            string curValue;
             var timer = new Stopwatch();
-            timer.Start();
-            for (int i = 0; i < cylcles; i++)
-                curValue = randomValue.Status;
-            timer.Stop();
-            Console.WriteLine("{3}:\t{0} cycles {1} msec {2} cylcles/msec", cylcles,
-                timer.ElapsedMilliseconds, cylcles/timer.ElapsedMilliseconds,
-                randomValue.GetType().Name);
+            var times = new long[cycles];
+            for (var i = 0; i < cycles; i++)
+            {
+                timer.Restart();
+                var curValue = randomValue.Status;
+                timer.Stop();
+                times[i] = timer.ElapsedTicks;
+                GC.Collect();
+                GC.WaitForFullGCComplete();
+                GC.Collect();
+            }
+            //for (var i = 0; i < cycles; i++)
+            //{
+            //    Console.Write("{0,3:N0} ", times[i]);
+            //    if (i % 20 == 19)
+            //        Console.WriteLine("\n");
+            //}
+            Console.WriteLine("{0,6} {1,8:N0} {2,10:F2}", randomValue.GetType().Name,
+                times.Sum(), ((double)times.Sum())/cycles);
         }
     }
 }
